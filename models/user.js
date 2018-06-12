@@ -20,12 +20,14 @@ userSchema.set('toObject', {
   }
 });
 
-userSchema.methods.validatePassword = function (password) {
-  return bcrypt.compare(password, this.password);
+// Note: Use `function` (not an `arrow function`) to allow setting `this`
+userSchema.methods.validatePassword = function (pwd) {
+  const currentUser = this;
+  return bcrypt.compare(pwd, currentUser.password);
 };
 
-userSchema.statics.hashPassword = function (password) {
-  return bcrypt.hash(password, 10);
+userSchema.statics.hashPassword = function (pwd) {
+  return bcrypt.hash(pwd, 10);
 };
 
 module.exports = mongoose.model('User', userSchema);
