@@ -7,7 +7,7 @@ const router = express.Router();
 
 const localAuth = passport.authenticate('local', {session: false, failWithError: true});
 
-router.post('/', localAuth, function (req, res) {
+router.post('/login', localAuth, (req, res) => {
   return res.json(req.user);
 });
 
