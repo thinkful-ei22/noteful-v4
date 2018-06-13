@@ -9,6 +9,7 @@ const router = express.Router();
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
 
+  /***** Never trust users - validate input *****/
   const requiredFields = ['username', 'password'];
   const missingField = requiredFields.find(field => !(field in req.body));
 
