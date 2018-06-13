@@ -32,14 +32,23 @@ function validateTagIds(tags, userId) {
     return Promise.resolve();
   }
   if (!Array.isArray(tags)) {
-    const err = new Error('The `tags` must be an array');
+    const err = new Error('The `tags` property must be an array');
     err.status = 400;
     return Promise.reject(err);
+  }
+  if (tags) {
+    tags.forEach((tag) => {
+      if (!mongoose.Types.ObjectId.isValid(tag)) {
+        const err = new Error('The `tags` array contains an invalid `id`');
+        err.status = 400;
+        return Promise.reject(err);
+      }
+    });
   }
   return Tag.find({ $and: [{ _id: { $in: tags }, userId }] })
     .then(results => {
       if (tags.length !== results.length) {
-        const err = new Error('The `tags` array contains an invalid id');
+        const err = new Error('The `tags` array contains an invalid `id`');
         err.status = 400;
         return Promise.reject(err);
       }
@@ -125,17 +134,6 @@ router.post('/', (req, res, next) => {
     validateFolderId(folderId, userId),
     validateTagIds(tags, userId)
   ])
-    .catch(err => {
-      if (err === 'InvalidFolder') {
-        err = new Error('The folder is not valid');
-        err.status = 400;
-      }
-      if (err === 'InvalidTag') {
-        err = new Error('The tag is not valid');
-        err.status = 400;
-      }
-      next(err);
-    })
     .then(() => Note.create(newNote))
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
@@ -173,17 +171,6 @@ router.put('/:id', (req, res, next) => {
     validateFolderId(folderId, userId),
     validateTagIds(tags, userId)
   ])
-    .catch(err => {
-      if (err === 'InvalidFolder') {
-        err = new Error('The folder is not valid');
-        err.status = 400;
-      }
-      if (err === 'InvalidTag') {
-        err = new Error('The tag is not valid');
-        err.status = 400;
-      }
-      next(err);
-    })
     .then(() => {
       return Note.findByIdAndUpdate(id, updateNote, { new: true })
         .populate('tags');
